@@ -76,6 +76,9 @@ Route::group([
       'middleware' => ['auth:api','admin'],
     ], function() {
         Route::post('roles', 'UserController@login');
+        // roles
+        Route::Post('get-roles','RoleController@index');
+        Route::resource('permissions', PermissionController::class);
     });
 
 });
