@@ -12,12 +12,6 @@ use App\Http\Controllers\InvoiceController;
 
 
 
-Route::post('login', [ApiController::class, 'authenticate']);
-Route::post('register', [ApiController::class, 'register']);
-Route::post('register/verify', [ApiController::class, 'verifyOtp']);
-Route::post('forgot-password', [ApiController::class, 'sendResetLinkResponse']);
-Route::post('forgot-password/check', [ApiController::class, 'sendResetLinkResponseCheck']);
-Route::post('reset-password', [ApiController::class, 'sendResetResponse']);
 
 Route::group(['middleware' => ['auth:api']], function() {
     Route::get('logout', [ApiController::class, 'logout']);
@@ -44,4 +38,44 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('create', [ProductController::class, 'store']);
     Route::put('update/{product}',  [ProductController::class, 'update']);
     Route::delete('delete/{product}',  [ProductController::class, 'destroy']);
+});
+
+Route::group([
+    'namespace' => 'App\Http\Controllers\Api',
+], function (){ 
+
+
+    Route::post('login', 'ApiController@authenticate');
+    Route::post('register','ApiController@register');
+    Route::post('register/verify','ApiController@verifyOtp');
+    Route::post('forgot-password','ApiController@sendResetLinkResponse');
+    Route::post('forgot-password/check','ApiController@sendResetLinkResponseCheck');
+    Route::post('reset-password','ApiController@sendResetResponse');
+   
+
+    Route::group([
+      'middleware' => ['auth:api','admin'],
+    ], function() {
+        Route::post('roles', 'UserController@login');
+    });
+
+});
+
+
+
+
+Route::group([
+    'namespace' => 'App\Http\Controllers\Api\Admin',
+    'prefix' => 'admin',
+    'as' => 'admin.'
+], function (){ 
+
+    Route::post('registration', 'AuthController@register')->name('registration');
+
+    Route::group([
+      'middleware' => ['auth:api','admin'],
+    ], function() {
+        Route::post('roles', 'UserController@login');
+    });
+
 });

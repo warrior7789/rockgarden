@@ -15,3 +15,10 @@ php artisan make:model service_application -m
 php artisan make:model staff_assignment -m 
 
 php artisan make:model transaction -m 
+
+
+php artisan migrate:refresh --seed
+composer dump-autoload
+
+php artisan key:generate
+php artisan passport:install

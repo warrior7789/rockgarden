@@ -54,4 +54,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Product::class);
     }
+
+
+
+    public function isAdmin() {
+        return $this->is_admin === 1;
+    }
+
+    public function isUser() {
+        return $this->is_admin === 0;
+    }  
+
+    public function role()
+    {
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
 }

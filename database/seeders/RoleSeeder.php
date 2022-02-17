@@ -17,13 +17,13 @@ class RoleSeeder extends Seeder
         //
         $role = Role::create(['name' => 'Developer']);
         $role = Role::create(['name' => 'Administrators']);
-        $role = Role::create(['name' => 'Registered User']);
-        $role = Role::create(['name' => 'Client User']);
-        $role = Role::create(['name' => 'Care Giver User']);
-        $role = Role::create(['name' => 'Nurse User']);
-        $role = Role::create(['name' => 'Nurse Assistant User']);
-        $role = Role::create(['name' => 'Physiotherapist User']);
-        $role = Role::create(['name' => 'Doctor User']);
+        $role = Role::create(['name' => 'Registered']);
+        $role = Role::create(['name' => 'Client']);
+        $role = Role::create(['name' => 'Care Giver']);
+        $role = Role::create(['name' => 'Nurse']);
+        $role = Role::create(['name' => 'Nurse Assistant']);
+        $role = Role::create(['name' => 'Physiotherapist']);
+        $role = Role::create(['name' => 'Doctor']);
     }
 }
 

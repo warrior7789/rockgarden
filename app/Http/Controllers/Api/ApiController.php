@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use JWTAuth;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Exceptions\JWTException;
+
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +15,17 @@ use App\Mail\Gmail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
-class ApiController extends Controller
-{
+class ApiController extends BaseController
+{   
+    protected $maxAttempts = 3; // Default is 5
+    protected $decayMinutes = 2; // Default is 1
+
+    use AuthenticatesUsers;
+
+    protected $response;
+
     public function register(Request $request)
     {
     	//Validate data
@@ -117,8 +125,7 @@ class ApiController extends Controller
         
     }
 
-    public function authenticate(Request $request)
-    {
+    public function authenticate_(Request $request){
         $credentials = $request->only('email', 'password');
 
         //valid credential
@@ -171,6 +178,46 @@ class ApiController extends Controller
             // 'token' => $token,
             // 'user_role' => $roleId
         ]);
+    }
+
+    public function authenticate(Request $request){
+       $credentials = $request->only('email', 'password');
+
+       //valid credential
+       $validator = Validator::make($credentials, [
+           'email' => 'required|email',
+           'password' => 'required|string|min:6|max:50'
+       ]);
+
+       //Send failed response if request is not valid
+       if ($validator->fails()) {
+           return response()->json([
+               'success' => false, 
+               'message' => 'Invalid login credentials.'
+           ], 404);
+       }
+       //$credentials['is_verified'] = 1;
+
+       if (auth()->attempt($credentials)) {
+           $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
+           $user = User::find(auth()->user()->id);
+           $roles = $user->getRoleNames();
+           return response()->json([
+               'success' => true,
+               'message' => ['user'=> auth()->user(),'token'=> $token,'roles'=>$roles]
+           ]);
+       } else {
+           $this->incrementLoginAttempts($request);
+           return $this->sendError('Invalid login credentials.',[],0);
+       }
+               
+       $token = auth()->user()->createToken('LaravelAuthApp')->accessToken; 
+
+       $user = User::where('email', $request->email)->first();
+       $userId = User::where('email', $request->email)->select('id')->first();
+
+        //Token created, return with success response and jwt token
+       
     }
  
     public function logout(Request $request)
