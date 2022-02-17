@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -13,7 +12,7 @@ class ServiceController extends Controller
 {
     public function get_service(Request $request)
     {
-        $token= $request->bearerToken();
+        
         $service_plan = DB::table('services')
                             ->get();
         return response()->json(['success' => true, 'message' => $service_plan]);

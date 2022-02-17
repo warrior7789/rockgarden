@@ -17,10 +17,10 @@ class CreateInvoicesTable extends Migration
             $table->id();
             $table->integer('service_application_id')->nullable();
             $table->string('payment_name')->nullable();
-            $table->string('payment_description',765)->nullable();
-            $table->double('payment_amount', 16, 2);
-            $table->string('currency',12)->nullable();
-            $table->tinyInteger('is_paid',4)->nullable();
+            $table->string('payment_description')->nullable();
+            $table->float('payment_amount',16,2)->nullable();
+            $table->string('currency')->nullable();
+            $table->tinyInteger('is_paid')->nullable();
             $table->integer('paid_by_user_id')->nullable();
             $table->date('due_date')->nullable();
             $table->timestamps();

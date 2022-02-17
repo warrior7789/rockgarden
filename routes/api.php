@@ -2,12 +2,15 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\InvoiceController;
+
+
 
 Route::post('login', [ApiController::class, 'authenticate']);
 Route::post('register', [ApiController::class, 'register']);
@@ -16,7 +19,7 @@ Route::post('forgot-password', [ApiController::class, 'sendResetLinkResponse']);
 Route::post('forgot-password/check', [ApiController::class, 'sendResetLinkResponseCheck']);
 Route::post('reset-password', [ApiController::class, 'sendResetResponse']);
 
-Route::group(['middleware' => ['jwt.verify']], function() {
+Route::group(['middleware' => ['auth:api']], function() {
     Route::get('logout', [ApiController::class, 'logout']);
     Route::get('get-user', [ApiController::class, 'get_user']);
     Route::post('profile/update', [ApiController::class, 'profile_update']);
