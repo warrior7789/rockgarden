@@ -4,7 +4,8 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-
+use Illuminate\Support\Arr;
+use Illuminate\Auth\AuthenticationException;
 class Handler extends ExceptionHandler
 {
     /**
@@ -37,5 +38,30 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    protected function unauthenticated($request, AuthenticationException $exception){
+       // if ($request->expectsJson()) {
+           // $response = [
+           //     'message' => $exception->getMessage()
+           // ];
+           $response = [
+               'status'    => 0,
+               'message'   => "Please Login to continue.",
+           ];
+           return response()->json($response, 401);
+       // }
+        /*$guard = Arr::get($exception->guards(),0);
+        $paths = explode('/',$request->getPathInfo());
+        switch ($guard) {
+            default:
+                if(array_search("admin",$paths)){
+                    $login = '';
+                }else{
+                    $login = 'home';
+                }              
+                break;
+        }
+       return redirect()->guest(route($login));*/
     }
 }

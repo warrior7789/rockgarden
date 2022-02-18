@@ -7,117 +7,99 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\Api\BaseController;
+use Lang;
+use Auth;
+use Validator;
+use Carbon\Carbon;
 
 
 class PermissionController extends BaseController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
+    
+    protected $response = array();
+    public function index(){
+
         if (! Gate::allows('permission_manage')) {
             return abort(401);
         }
+        $this->response['permissions'] = Permission::all();
+        return $this->sendResponse([],$this->response,1);
 
-        $permissions = Permission::all();
-        return $this->sendResponse($permissions,'Success.',1);
+        
+    }
+    
+    public function store(Request $request){
+
+        
+        $messages = [
+            'name.required' => 'Name Field Required',
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'name'         => 'required',
+        ],$messages);
+        if ($validator->fails()) {
+           return $this->sendError($validator->errors()->first(), [],0);
+        }
+        try {
+            Permission::create($request->all());
+            $this->response['permissions'] = Permission::all();
+            $this->response['message'] = "Added Successfully";
+            return $this->sendResponse([],$this->response,1);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [],0);           
+        }
+        
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        if (! Gate::allows('permission_manage')) {
-            return abort(401);
+    public function update(request $request){
+        
+        $messages = [
+            'name.required' => 'Name Field Required',
+            'id.required' => 'Id Field Required',
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'name'         => 'required',
+            'id'         => 'required',
+        ],$messages);
+        if ($validator->fails()) {
+           return $this->sendError($validator->errors()->first(), [],0);
         }
-        return view('admin.permissions.create');
+        
+        $permission = Permission::find($request->id);    
+        try {
+            $permission->update($request->all());
+            $this->response['permissions'] = Permission::all();
+            $this->response['message'] = "Added Successfully";
+            return $this->sendResponse([],$this->response,1);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [],0);           
+        }
+        
     }
+    
+    public function destroy(request $request){
+        
+        $messages = [            
+            'id.required' => 'Id Field Required',
+        ];
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StorePermissionsRequest $request)
-    {
-        if (! Gate::allows('permission_manage')) {
-           return abort(401);
-        }
-        Permission::create($request->all());
-
-        return redirect()->route('admin.permissions.index');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Permission $permission)
-    {
-        if (! Gate::allows('permission_manage')) {
-            return abort(401);
+        $validator = Validator::make($request->all(), [
+            'id'         => 'required',
+        ],$messages);
+        if ($validator->fails()) {
+           return $this->sendError($validator->errors()->first(), [],0);
         }
 
-        return view('admin.permissions.show', compact('permission'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Permission $permission)
-    {
-        if (! Gate::allows('permission_manage')) {
-            return abort(401);
-        }
-
-        return view('admin.permissions.edit', compact('permission'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdatePermissionsRequest $request, Permission $permission)
-    {
-        if (! Gate::allows('permission_manage')) {
-           return abort(401);
-        }
-
-        $permission->update($request->all());
-
-        return redirect()->route('admin.permissions.index');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Permission $permission)
-    {
-        if (! Gate::allows('permission_manage')) {
-           return abort(401);
-        }
-
-        $permission->delete();
-
-        return redirect()->route('admin.permissions.index');
+        $permission = Permission::find($request->id);
+        try {           
+            $permission->delete();
+            $this->response['permissions'] = Permission::all();
+            $this->response['message'] = "Deleted Successfully";
+            return $this->sendResponse([],$this->response,1);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [],0);           
+        }        
     }
 }

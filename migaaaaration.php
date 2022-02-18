@@ -17,9 +17,9 @@ php artisan make:model staff_assignment -m
 php artisan make:model transaction -m 
 
 
+
 php artisan migrate:refresh --seed
 composer dump-autoload
-
 php artisan key:generate
 php artisan passport:install
 
@@ -113,3 +113,25 @@ Report Module:
 •	Transactions Report
 •	Inventory (Profit & Loss) Report
 •	Salary (Montly Statement) Report
+
+
+{{base_url}}admin/get-roles
+
+
+
+
+$messages = [
+    'title.required' => 'Title required',
+    'description.required' => 'Description required',
+];
+
+$validator = Validator::make($request->all(), [
+    'title'         => 'required',
+    'description'   => 'required',
+    'attachment_one'=> 'image|mimes:jpeg,png,jpg',
+    'attachment_two'=> 'image|mimes:jpeg,png,jpg',
+],$messages);
+
+if ($validator->fails()) {
+   return $this->sendError($validator->errors()->first(), [],0);
+}

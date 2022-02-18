@@ -69,7 +69,7 @@ class ApiController extends BaseController
             'title' => 'Testing Application OTP',
             'body' => 'Your OTP is : '. $otp
         ];
-        Mail::to($request->email)->send(new Gmail($mail_details));
+        //Mail::to($request->email)->send(new Gmail($mail_details));
     
         //Request is valid, create new user
         $user = User::create([
@@ -86,9 +86,10 @@ class ApiController extends BaseController
         	'email' => $request->email,
         	'password' => bcrypt($request->password),
         ]);
+        $user->assignRole('Registered');
         User::where('email','=',$request->email)->update(['otp' => $otp]);
         $userId = User::where('email', '=', $request->email)->select('id')->first();
-        DB::table('role_user')->insert(['role_id'=>3, 'user_id' => $userId['id']]);
+        //DB::table('role_user')->insert(['role_id'=>3, 'user_id' => $userId['id']]);
 
         //User created, return success response
         return response()->json([
@@ -221,7 +222,9 @@ class ApiController extends BaseController
     }
  
     public function logout(Request $request)
-    {
+    {   
+        $request->user()->token()->revoke();
+        return $this->sendResponse($this->response,'User has been logged out',1);  
         //valid credential
         $validator = Validator::make($request->only('token'), [
             'token' => 'required'

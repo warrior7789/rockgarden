@@ -9,6 +9,11 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Api\BaseController;
+use Lang;
+use Auth;
+use Validator;
+use Carbon\Carbon;
+
 
 class RoleController extends BaseController
 {
@@ -23,41 +28,42 @@ class RoleController extends BaseController
         if (! Gate::allows('role_manage')) {
             return abort(401);
         }  
-        $this->response['roles'] = Role::all();
+        $this->response['roles'] = Role::with('permissions')->get();
         return $this->sendResponse([],$this->response,1);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-         if (! Gate::allows('role_manage')) {
-            return abort(401);
-        }
-        $permissions = Permission::get()->pluck('name', 'name');
-
-        return view('admin.roles.create', compact('permissions'));
+   
+    public function edit(Request $request){
+       // dd($request->id);
+        $this->response['permissions'] = Permission::get()->pluck('name', 'name');
+        $this->response['role']= Role::with('permissions')->find($request->id);
+        
+        return $this->sendResponse([],$this->response,1);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreRolesRequest $request)
-    {
-        if (! Gate::allows('role_manage')) {
-            return abort(401);
-        }
-        $role = Role::create($request->except('permission'));
-        $permissions = $request->input('permission') ? $request->input('permission') : [];
-        $role->givePermissionTo($permissions);
+    
+    public function store(Request $request){
+       
+        $messages = [
+            'name.required' => 'Name Field Required',
+        ];
 
-        return redirect()->route('admin.roles.index');
+        $validator = Validator::make($request->all(), [
+            'name'         => 'required',
+        ],$messages);
+        if ($validator->fails()) {
+           return $this->sendError($validator->errors()->first(), [],0);
+        }
+        try {
+           $role = Role::create($request->except('permission'));
+           $permissions = $request->input('permission') ? $request->input('permission') : [];
+
+           $role->givePermissionTo($permissions);
+           $this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
+           return $this->sendResponse([],$this->response,1);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [],0);           
+        }
     }
 
     /**
@@ -66,8 +72,7 @@ class RoleController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Role $role)
-    {
+    public function show(Role $role){
         if (! Gate::allows('role_manage')) {
             return abort(401);
         }
@@ -77,21 +82,7 @@ class RoleController extends BaseController
         return view('admin.roles.show', compact('role'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Role $role)
-    {
-        if (! Gate::allows('role_manage')) {
-            return abort(401);
-        }
-        $permissions = Permission::get()->pluck('name', 'name');
-        //dd($role->permissions);
-        return view('admin.roles.edit', compact('role', 'permissions'));
-    }
+   
 
     /**
      * Update the specified resource in storage.
@@ -100,15 +91,35 @@ class RoleController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateRolesRequest $request, Role $role)
+    public function update(Request $request)
     {
-        if (! Gate::allows('role_manage')) {
-            return abort(401);
+        
+        $messages = [
+            'name.required' => 'Name Field Required',
+            'id.required' => 'Id Field Required',
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'name'         => 'required',
+            'id'         => 'required',
+        ],$messages);
+        if ($validator->fails()) {
+           return $this->sendError($validator->errors()->first(), [],0);
+        }
+        $role = Role::find($request->id);
+        try {
+            $role->update($request->except('permission'));
+            $permissions = $request->input('permission') ? $request->input('permission') : [];
+            $role->syncPermissions($permissions);
+           
+            $this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
+            $this->response['message'] = "Added Successfully";
+            return $this->sendResponse([],$this->response,1);
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [],0);           
         }
 
-        $role->update($request->except('permission'));
-        $permissions = $request->input('permission') ? $request->input('permission') : [];
-        $role->syncPermissions($permissions);
+       
 
         return redirect()->route('admin.roles.index');
     }
@@ -119,15 +130,33 @@ class RoleController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Role $role)
+    public function destroy(Request $request)
     {
         
         if (! Gate::allows('role_manage')) {
             return abort(401);
         }
 
-        $role->delete();
+       $messages = [            
+           'id.required' => 'Id Field Required',
+       ];
 
-        return redirect()->route('admin.roles.index');
+       $validator = Validator::make($request->all(), [
+           'id'         => 'required',
+       ],$messages);
+       if ($validator->fails()) {
+          return $this->sendError($validator->errors()->first(), [],0);
+       }
+
+
+       try {           
+            $role = Role::findOrFail($request->id);
+           $role->delete();
+           $this->response['message'] = "Deleted Successfully";
+           //$this->response['roles'] = Role::with('permission')->get();
+           return $this->sendResponse([],$this->response,1);
+       } catch (\Exception $e) {
+           return $this->sendError($e->getMessage(), [],0);           
+       }       
     }
 }
