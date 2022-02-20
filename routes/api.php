@@ -16,7 +16,7 @@ use App\Http\Controllers\InvoiceController;
 Route::group(['middleware' => ['auth:api']], function() {
     /*Route::post('logout', [ApiController::class, 'logout']);
     Route::get('get-user', [ApiController::class, 'get_user']);
-    Route::post('profile/update', [ApiController::class, 'profile_update']);
+    Route::post('profile/update', [ApiController::class, 'profile_update']);*/
     Route::get('get-service', [ServiceController::class, 'get_service']);
     Route::get('get-application-histories', [ServiceController::class, 'get_application_histories']);
     Route::get('get-application-history', [ServiceController::class, 'get_application_history']);
@@ -37,7 +37,7 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::get('products/{id}', [ProductController::class, 'show']);
     Route::post('create', [ProductController::class, 'store']);
     Route::put('update/{product}',  [ProductController::class, 'update']);
-    Route::delete('delete/{product}',  [ProductController::class, 'destroy']);*/
+    Route::delete('delete/{product}',  [ProductController::class, 'destroy']);
 });
 
 Route::group([
@@ -59,7 +59,7 @@ Route::group([
         Route::post('logout', 'ApiController@logout');
         Route::get('get-user', 'ApiController@get_user');
         Route::post('profile/update', 'ApiController@profile_update');
-        Route::get('get-service', [ServiceController::class, 'get_service']);
+        /*Route::get('get-service', [ServiceController::class, 'get_service']);
         Route::get('get-application-histories', [ServiceController::class, 'get_application_histories']);
         Route::get('get-application-history', [ServiceController::class, 'get_application_history']);
         Route::get('get-staff-assignments', [StaffController::class, 'get_staff_assignments']);
@@ -79,7 +79,7 @@ Route::group([
         Route::get('products/{id}', [ProductController::class, 'show']);
         Route::post('create', [ProductController::class, 'store']);
         Route::put('update/{product}',  [ProductController::class, 'update']);
-        Route::delete('delete/{product}',  [ProductController::class, 'destroy']);
+        Route::delete('delete/{product}',  [ProductController::class, 'destroy']);*/
     });
 
 });
@@ -98,7 +98,7 @@ Route::group([
     Route::group([
       'middleware' => ['auth:api','admin'],
     ], function() {
-        Route::post('roles', 'UserController@login');
+        
             
         //permissions
         Route::Post('get-permission','PermissionController@index'); //{{base_url}}admin/get-permission

@@ -17,13 +17,13 @@ php artisan make:model staff_assignment -m
 php artisan make:model transaction -m 
 
 
-
+composer install
 php artisan migrate:refresh --seed
 composer dump-autoload
 php artisan key:generate
 php artisan passport:install
 
-
+admin login  : superadmin@admin.com/lloyd@321
 
 
 

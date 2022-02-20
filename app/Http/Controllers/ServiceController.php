@@ -19,7 +19,7 @@ class ServiceController extends Controller
     }
 
     public function get_application_histories(Request $request)
-    {  
+    {
         if(isset($_GET['applicant_id']) && !empty($_GET['applicant_id'])){
             $Id = $_GET['applicant_id'];
             $where = 'applicant_id';
