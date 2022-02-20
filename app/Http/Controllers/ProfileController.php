@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Api\BaseController;
 
-class ProfileController extends Controller
+class ProfileController extends BaseController
 {
     public function upload_file(Request $request)
     {
-        $token= $request->bearerToken();
-
+        //$token= $request->bearerToken();
         $validator = Validator::make($request->all(),[ 
             'file' => 'required|mimes:jpg,jpeg,png,bmp,tiff |max:4096',
         ]);   
@@ -50,8 +49,8 @@ class ProfileController extends Controller
         if($validator->fails()) {          
            return response()->json(['error'=>$validator->errors()], 401);                        
         }
-
-        $user = JWTAuth::authenticate($token);
+        
+        $user = auth()->user();
         $user->file_img = $request->url;
         $user->save();
         

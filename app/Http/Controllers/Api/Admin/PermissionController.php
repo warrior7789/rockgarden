@@ -22,7 +22,7 @@ class PermissionController extends BaseController
         if (! Gate::allows('permission_manage')) {
             return abort(401);
         }
-        $this->response['permissions'] = Permission::all();
+        $this->response = Permission::all();
         return $this->sendResponse([],$this->response,1);
 
         
@@ -36,15 +36,16 @@ class PermissionController extends BaseController
         ];
 
         $validator = Validator::make($request->all(), [
-            'name'         => 'required',
+            'name'         => 'required|unique:permissions,name',
         ],$messages);
         if ($validator->fails()) {
            return $this->sendError($validator->errors()->first(), [],0);
         }
         try {
-            Permission::create($request->all());
-            $this->response['permissions'] = Permission::all();
-            $this->response['message'] = "Added Successfully";
+            $permission = Permission::create($request->all());
+            //$this->response['permissions'] = Permission::all();
+           // $this->response['message'] = "Added Successfully";
+            $this->response = $permission;
             return $this->sendResponse([],$this->response,1);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), [],0);           
@@ -60,7 +61,7 @@ class PermissionController extends BaseController
         ];
 
         $validator = Validator::make($request->all(), [
-            'name'         => 'required',
+            'name'         => 'required|unique:permissions,name,'.$request->id,
             'id'         => 'required',
         ],$messages);
         if ($validator->fails()) {
@@ -70,8 +71,9 @@ class PermissionController extends BaseController
         $permission = Permission::find($request->id);    
         try {
             $permission->update($request->all());
-            $this->response['permissions'] = Permission::all();
-            $this->response['message'] = "Added Successfully";
+            //$this->response['permissions'] = Permission::all();
+            //$this->response['message'] = "Added Successfully";
+            $this->response = $permission;
             return $this->sendResponse([],$this->response,1);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), [],0);           
@@ -95,8 +97,8 @@ class PermissionController extends BaseController
         $permission = Permission::find($request->id);
         try {           
             $permission->delete();
-            $this->response['permissions'] = Permission::all();
-            $this->response['message'] = "Deleted Successfully";
+            //$this->response['permissions'] = Permission::all();
+            $this->response = "Deleted Successfully";
             return $this->sendResponse([],$this->response,1);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), [],0);           

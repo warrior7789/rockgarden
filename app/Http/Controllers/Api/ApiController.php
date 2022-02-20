@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Gate;
 
 class ApiController extends BaseController
 {   
@@ -202,10 +204,12 @@ class ApiController extends BaseController
        if (auth()->attempt($credentials)) {
            $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
            $user = User::find(auth()->user()->id);
-           $roles = $user->getRoleNames();
+           //$roles = $user->getRoleNames();
+           $roles = $user->roles()->with('permissions')->get();
+           //dd($roles);
            return response()->json([
                'success' => true,
-               'message' => ['user'=> auth()->user(),'token'=> $token,'roles'=>$roles]
+               'message' => ['user'=> auth()->user(),'token'=> $token,'roles'=>$roles->toArray()]
            ]);
        } else {
            $this->incrementLoginAttempts($request);
@@ -221,10 +225,10 @@ class ApiController extends BaseController
        
     }
  
-    public function logout(Request $request)
-    {   
+    public function logout(Request $request){   
         $request->user()->token()->revoke();
         return $this->sendResponse($this->response,'User has been logged out',1);  
+
         //valid credential
         $validator = Validator::make($request->only('token'), [
             'token' => 'required'
@@ -266,11 +270,10 @@ class ApiController extends BaseController
             return response()->json([
                 'success' => false, 
                 'message' => 'The email dose not exist']);
-        } else {
-            $roleId = DB::table('role_user')->where('user_id', $user['id'])
-                        ->join('roles', 'roles.id', '=', 'role_user.role_id')
-                        ->select('roles.id')
-                        ->first();
+        } else {          
+
+          $user = User::with('roles')->with('permissions')->where('id',$user->id)->first();
+           
         }
         return response()->json(['success' => true, 'message' => $user]);
     }
@@ -329,6 +332,7 @@ class ApiController extends BaseController
         }
         $otp = rand(1000,9999);
         $response = User::where('email', $request->email)->first();
+        //dd($request->email);
 
         if($response){
             $emailCheck = DB::table('password_resets')->where('email', '=', $request->email)->exists();
@@ -354,7 +358,8 @@ class ApiController extends BaseController
             // if(!$mailSend) {
             //     return response(["success" => false, "message" => "An error occurred please try again."]);
             // }
-            DB::table('password_resets')->where('email', '=', $request->email)->update(['otp' => $otp]);
+            //DB::table('password_resets')->where('email', '=', $request->email)->update(['otp' => $otp]);
+            DB::table('users')->where('email', '=', $request->email)->update(['otp' => $otp]);
 
             $success = true;
             $message = "Mail send successfully";
@@ -369,10 +374,11 @@ class ApiController extends BaseController
     }
     protected function sendResetLinkResponseCheck(Request $request)
     {
-        $forgotPassword = DB::table('password_resets')->where([['email', '=', $request->email], ['otp', '=', $request->otp]])->first();
+        //$forgotPassword = DB::table('password_resets')->where([['email', '=', $request->email], ['otp', '=', $request->otp]])->first();
+        $forgotPassword = DB::table('users')->where([['email', '=', $request->email], ['otp', '=', $request->otp]])->first();
         
         if($forgotPassword){
-            DB::table('password_resets')->where('email', '=', $request->email)->update(['is_verified' => 1]);
+            DB::table('users')->where('email', '=', $request->email)->update(['is_verified' => 1]);
             return response(["success" => true, "message" => "Success"]);
         }
         else{

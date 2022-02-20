@@ -45,11 +45,12 @@ class Handler extends ExceptionHandler
            // $response = [
            //     'message' => $exception->getMessage()
            // ];
-           $response = [
+            $response = [
                'status'    => 0,
+               "success" => false,
                'message'   => "Please Login to continue.",
-           ];
-           return response()->json($response, 401);
+            ];
+            return response()->json($response, 401);
        // }
         /*$guard = Arr::get($exception->guards(),0);
         $paths = explode('/',$request->getPathInfo());

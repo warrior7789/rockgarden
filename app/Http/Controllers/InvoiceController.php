@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+/*use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;*/
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Validator;
@@ -14,8 +14,9 @@ class InvoiceController extends Controller
 {
     public function get_invoices(Request $request)
     {
-        $token= $request->bearerToken();
-        $user = JWTAuth::authenticate($token);
+        //$token= $request->bearerToken();
+        //$user = JWTAuth::authenticate($token);
+        $user = auth()->user();;
         // $reference = $request->only('reference');
         if(isset($_GET['reference']) && !empty($_GET['reference'])){
             $reference = $_GET['reference'];
@@ -84,8 +85,9 @@ class InvoiceController extends Controller
                 'success' => false, 
                 'message' => 'Record not found!']);          
         } else {
-            $token= $request->bearerToken();
-            $user = JWTAuth::authenticate($token);
+            /*$token= $request->bearerToken();
+            $user = JWTAuth::authenticate($token);*/
+            $user = auth()->user();
             
             if($request->is_rave)
             return $this->initialize_rave($invoice, $user, $request->email);

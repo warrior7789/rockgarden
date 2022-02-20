@@ -28,7 +28,7 @@ class RoleController extends BaseController
         if (! Gate::allows('role_manage')) {
             return abort(401);
         }  
-        $this->response['roles'] = Role::with('permissions')->get();
+        $this->response = Role::with('permissions')->get();
         return $this->sendResponse([],$this->response,1);
     }
 
@@ -54,12 +54,25 @@ class RoleController extends BaseController
         if ($validator->fails()) {
            return $this->sendError($validator->errors()->first(), [],0);
         }
+
+        $permissions = $request->input('permission') ? $request->input('permission') : [];
+        if(!empty($permissions)){
+            foreach ($permissions as $key => $permission) {
+               $permissions_ = Permission::where('name',$permission)->first();
+               if(empty($permissions_))
+                return $this->sendError(" permission ".$permission." not found.", [],0);
+            }
+        }
+
+
         try {
+
            $role = Role::create($request->except('permission'));
            $permissions = $request->input('permission') ? $request->input('permission') : [];
 
            $role->givePermissionTo($permissions);
-           $this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
+           //$this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
+           $this->response = Role::with('permissions')->where('id',$role->id)->first();
            return $this->sendResponse([],$this->response,1);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), [],0);           
@@ -106,21 +119,28 @@ class RoleController extends BaseController
         if ($validator->fails()) {
            return $this->sendError($validator->errors()->first(), [],0);
         }
+
+        $permissions = $request->input('permission') ? $request->input('permission') : [];
+        if(!empty($permissions)){
+            foreach ($permissions as $key => $permission) {
+               $permissions_ = Permission::where('name',$permission)->first();
+               if(empty($permissions_))
+                return $this->sendError(" permission ".$permission." not found.", [],0);
+            }
+        }
         $role = Role::find($request->id);
         try {
             $role->update($request->except('permission'));
             $permissions = $request->input('permission') ? $request->input('permission') : [];
             $role->syncPermissions($permissions);
            
-            $this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
-            $this->response['message'] = "Added Successfully";
+            //$this->response['role'] = Role::with('permissions')->where('id',$role->id)->first();
+            //$this->response['message'] = "Added Successfully";
+            $this->response= Role::with('permissions')->where('id',$role->id)->first();
             return $this->sendResponse([],$this->response,1);
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), [],0);           
         }
-
-       
-
         return redirect()->route('admin.roles.index');
     }
 
@@ -152,7 +172,7 @@ class RoleController extends BaseController
        try {           
             $role = Role::findOrFail($request->id);
            $role->delete();
-           $this->response['message'] = "Deleted Successfully";
+           $this->response = "Deleted Successfully";
            //$this->response['roles'] = Role::with('permission')->get();
            return $this->sendResponse([],$this->response,1);
        } catch (\Exception $e) {
